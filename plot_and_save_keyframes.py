@@ -2,7 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import os
-from PIL import Image  # For opening the image after saving
 
 # Load the keyframe trajectory
 def load_trajectory(file_path):
@@ -44,11 +43,10 @@ def plot_and_save_trajectory(data, output_image_path):
     
     # Save the plot as an image
     plt.savefig(output_image_path)
-    print(f"Trajectory plot saved as: {output_image_path}")
-
-    # Open the image for viewing
-    img = Image.open(output_image_path)
-    img.show()
+    print("Trajectory plot saved as: {}".format(output_image_path))
+    
+    # Show the interactive graph
+    plt.show()
 
 # Main function
 def main():
@@ -57,7 +55,7 @@ def main():
 
     # Load trajectory data
     if not os.path.exists(trajectory_file):
-        print(f"Error: File {trajectory_file} not found.")
+        print("Error: File {} not found.".format(trajectory_file))
         return
 
     trajectory_data = load_trajectory(trajectory_file)
