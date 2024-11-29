@@ -65,3 +65,42 @@ This guide provides instructions to update the `myvideo.cpp` file, add the Pytho
 
 ---
 
+# Using YOLOv11 with ORB-SLAM3
+
+This guide demonstrates how to integrate YOLOv11 for object detection with ORB-SLAM3 for simultaneous localization and mapping (SLAM). The script processes a video file, performs object detection using YOLOv11, and runs ORB-SLAM3 in parallel.
+
+---
+
+## **Installation**
+
+### **Step 1: Install Ultralytics**
+1. Install Python 3.8+:
+   ```bash
+   sudo apt update
+   sudo apt install python3 python3-pip
+   ```
+
+2. Install Ultralytics:
+   ```bash
+   cd
+   pip install ultralytics
+   ```
+
+3. Verify that YOLOv11 is installed:
+   ```bash
+   yolo --help
+   ```
+
+---
+
+### **Step 2: Usage**
+
+### **Run the Script**
+1. Copy and save `orb3_yolo11.py` script:
+
+2. Run the script:
+   ```bash
+   python3 orb3_yolo11.py
+   ```
+
+---
