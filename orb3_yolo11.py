@@ -1,32 +1,57 @@
 import cv2
 import subprocess
 from ultralytics import YOLO
+import time
+import os
+
+# Paths
+keyframe_file = "MyKeyFrameTrajectoryTUMFormat.txt"  # Replace with your keyframe file path
+detection_file_path = "yolo_detection.txt"          # File for YOLO detections
+video_path = "/home/ben/Dev/ORB_SLAM3/Examples/Monocular/video.mp4"
 
 # Start ORB-SLAM3 in a subprocess
-orbslam_process = subprocess.Popen(["/home/ben/Dev/ORB_SLAM3/Examples/Monocular/myvideo"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+orbslam_process = subprocess.Popen(
+    ["/home/ben/Dev/ORB_SLAM3/Examples/Monocular/myvideo"], 
+    stdout=subprocess.PIPE, 
+    stderr=subprocess.PIPE
+)
 
+# Initialize YOLOv11
 model = YOLO("yolo11n.pt") 
-# Open the video file (replace with your video path or webcam index)
-cap = cv2.VideoCapture("/home/ben/Dev/ORB_SLAM3/Examples/Monocular/video.mp4")  # Use 0 for webcam, or a video path
+cap = cv2.VideoCapture(video_path)
 
-while cap.isOpened():
-    ret, frame = cap.read()
-    if not ret:
-        break
+# Open a file to save YOLO detections
+with open(detection_file_path, "w") as detection_file:
+    while cap.isOpened():
+        ret, frame = cap.read()
+        if not ret:
+            break
 
-    # Run YOLOv11 on the frame
-    results = model(frame)  # Perform inference on the frame
+        # Run YOLOv11 on the frame
+        results = model(frame)
 
-    # Annotate the frame with YOLOv11 detections
-    annotated_frame = results[0].plot()  # Use YOLO's built-in plotting function to annotate the frame
+        # Get frame timestamp
+        timestamp = cap.get(cv2.CAP_PROP_POS_MSEC) / 1000.0  # Convert milliseconds to seconds
 
-    # Display the YOLOv11 result
-    cv2.imshow("YOLOv11 + ORB-SLAM3", annotated_frame)
+        # Save YOLO detections
+        for result in results[0].boxes:
+            cls = int(result.cls.cpu().numpy()[0])  # Get the class label
+            conf = result.conf.cpu().numpy()[0]  # Get confidence score
+            class_name = model.names[cls]  # Get the class name from the model
+            detection_file.write(f"{timestamp}, {class_name}, {conf:.2f}\n")
+        detection_file.flush()  # Ensure immediate write to file
 
-    # Wait for a key press to exit
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
+        # Annotate and display the frame
+        annotated_frame = results[0].plot()
+        cv2.imshow("YOLOv11 + ORB-SLAM3", annotated_frame)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
 
 cap.release()
-#cv2.destroyAllWindows()
-#orbslam_process.terminate()  # Terminate ORB-SLAM3 process
+cv2.destroyAllWindows()
+
+# Wait for ORB-SLAM3 process to complete
+orbslam_process.communicate()
+orbslam_process.terminate()
+
+
